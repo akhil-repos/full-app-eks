@@ -88,3 +88,67 @@ jobs:
           push: false
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,mode=max,scope=frontend
+
+  # Only on pushes to main, after tests and dependency scans pass.
+  # Auth is GitHub OIDC -> IAM role limited to this repo's main branch and ECR push.
+  publish:
+    name: publish ${{ matrix.service }}
+    needs: [backend, frontend]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # OIDC to AWS and keyless cosign signing
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [backend1, backend2, backend3, backend4, frontend]
+    env:
+      AWS_REGION: us-east-1
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::426737295553:role/app-github-ecr-push
+          aws-region: ${{ env.AWS_REGION }}
+
+      - id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build image (local, for scanning)
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.service }}
+          load: true
+          tags: ${{ steps.ecr.outputs.registry }}/app/${{ matrix.service }}:${{ github.sha }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+
+      - name: Scan image (fail on fixable HIGH/CRITICAL)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ steps.ecr.outputs.registry }}/app/${{ matrix.service }}:${{ github.sha }}
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+
+      - name: Push image
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.service }}
+          push: true
+          tags: ${{ steps.ecr.outputs.registry }}/app/${{ matrix.service }}:${{ github.sha }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          provenance: false
+
+      - uses: sigstore/cosign-installer@v3.7.0
+
+      - name: Sign image (keyless)
+        run: cosign sign --yes "${{ steps.ecr.outputs.registry }}/app/${{ matrix.service }}@${{ steps.push.outputs.digest }}"
+
+      - name: Summary
+        run: |
+          echo "${{ matrix.service }}: ${{ steps.ecr.outputs.registry }}/app/${{ matrix.service }}@${{ steps.push.outputs.digest }}" >> "$GITHUB_STEP_SUMMARY"
