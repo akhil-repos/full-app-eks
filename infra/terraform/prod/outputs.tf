@@ -1,0 +1,27 @@
+output "ecr_repositories" {
+  value = module.ecr.repository_urls
+}
+
+output "ci_role_arn" {
+  value = module.github_oidc.role_arn
+}
+
+output "vpc_id" {
+  value = module.vpc.vpc_id
+}
+
+output "private_subnet_ids" {
+  value = module.vpc.private_subnet_ids
+}
+
+output "public_subnet_ids" {
+  value = module.vpc.public_subnet_ids
+}
+
+output "db_address" {
+  value = module.rds.address
+}
+
+output "db_secret_arn" {
+  value = module.rds.master_user_secret_arn
+}
