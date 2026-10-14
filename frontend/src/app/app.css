@@ -1,0 +1,35 @@
+main {
+  max-width: 640px;
+  margin: 3rem auto;
+  padding: 0 1rem;
+  font-family: system-ui, sans-serif;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+.card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1.2rem;
+}
+.dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #999;
+}
+.live { border-color: #2e9d4f; }
+.live .dot { background: #2e9d4f; }
+.off { border-color: #d03a3a; }
+.off .dot { background: #d03a3a; }
+.hint { color: #777; font-size: 0.85rem; }
+table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid #ddd; }
+.ok { color: #2e9d4f; }
+.bad { color: #d03a3a; }

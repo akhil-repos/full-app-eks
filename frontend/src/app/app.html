@@ -1,0 +1,31 @@
+<main>
+  <h1>Backend status</h1>
+  <div class="grid">
+    @for (b of backends(); track b.name) {
+      <section class="card" [class.live]="b.live === true" [class.off]="b.live === false">
+        <span class="dot"></span>
+        <span class="msg">{{ b.message }}</span>
+      </section>
+    }
+  </div>
+  <h2>History</h2>
+  @if (history().length === 0) {
+    <p class="hint">No history yet.</p>
+  } @else {
+    <table>
+      <thead>
+        <tr><th>Time</th><th>Service</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        @for (row of history(); track $index) {
+          <tr>
+            <td>{{ row.created_at | date: 'medium' }}</td>
+            <td>{{ row.service }}</td>
+            <td [class]="row.status === 'live' ? 'ok' : 'bad'">{{ row.status }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+  <p class="hint">Refreshes every 5 seconds.</p>
+</main>
