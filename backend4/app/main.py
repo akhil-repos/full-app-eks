@@ -8,9 +8,8 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 SERVICE_NAME = os.getenv("SERVICE_NAME", "backend4")
-DATABASE_URL = os.getenv(
-    "DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/appdb"
-)
+# no default: credentials come from the environment (a Secrets Manager secret in prod)
+DATABASE_URL = os.environ["DATABASE_URL"]
 HEARTBEAT_SECONDS = int(os.getenv("HEARTBEAT_SECONDS", "10"))
 CORS_ORIGINS = [o for o in os.getenv("CORS_ORIGINS", "").split(",") if o]
 

@@ -16,4 +16,4 @@ Test the "off" case: `docker compose stop backend2` — card turns to `backend2 
 
 Check DB: `docker compose exec postgres psql -U postgres appdb -c "select * from service_status"`
 
-Backend config via env: `DATABASE_URL`, `SERVICE_NAME`, `HEARTBEAT_SECONDS`.
+Backend config via env: `DATABASE_URL` (required, no default), `SERVICE_NAME`, `HEARTBEAT_SECONDS`. In AWS, External Secrets builds `DATABASE_URL` from the RDS-managed Secrets Manager secret (username/password) plus the DB host.
